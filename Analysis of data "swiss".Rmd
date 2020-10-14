@@ -1,0 +1,112 @@
+---
+title: "HW 2"
+author: "Alina"
+date: "9/14/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+Question 1
+```{r}
+data("swiss")
+?swiss
+```
+  Estimating beta_0 and beta_1        
+  
+  beta_1=Cov(Agriculture,Fertility)/Var(Agriculture)
+  
+  beta_0=mean(Fertility)-beta_1*mean(Agriculture)
+  
+  ```{r}
+sd(swiss$Agriculture)
+sd(swiss$Fertility)
+nix<-c(1,2)
+cor(swiss[,nix])
+```
+Now, we can calculate Correlation knowing covariance and S.D. of Agriculture and Fertility:
+
+Cor(Agr,Fert)=Cov(Agr,Fert)/SD(Agr)*SD(Fert);
+0.3530792=Cov/22.71*12.4917
+```{r}
+0.3530792*22.71*12.4917
+```
+Finally, beta_1:
+```{r}
+100.1638/515.7994
+```
+
+and beta_0:
+```{r}
+70.14-0.1942*50.66
+```
+Estimating by using `lm` function gives us very close output:
+```{r}
+lmod<-lm(Fertility~Agriculture,swiss)
+coef(lmod)
+```
+Question 2:
+beta_0=60.30 is the intercept in our equation and it means that when there is 0% of male involved in agriculture as occupation, common standardized fertility measure will be equal to 60.30 `lg`.
+beta_1=0.1942 is the slope and we see that with every percent change in agriculture, standardized fertility measure will increase by 0.1942 or for every 10% change in agriculture fertility measure will increase by 1.942 lg.
+There are also limits have to be applied to these values. Since the percentage range is from 0 to 100, Agriculture coefficient cannot be negative(however when its negative it means it will decrease) and bigger than 100% because the maximum percentage of male involved in agriculture is 100%- absolutely everybody in the population( which is hard to imagine). 
+
+Question 3
+```{r}
+lmod<-lm(Fertility~Agriculture,swiss)
+plot(lmod)
+```
+On the first plot residuals plotted against fitted values. This plot helps us to see the lack of fit. As more constant variance as smoother red curve would be. In my model we can see that variance is very dispersed so our assumption about the constant variance on the error is violated, therefore some change to the model is required.
+The second plot is used to compare the residuals to "ideal" normal observations. We see that in the middle of the curve there is a sort of a straight line suggesting linearity but the ends of the curve diverge which indicates a long-tailed error,thus we should consider robust fitting methods.
+The next plot is similar to the first but we plotted the absolute value of the residuals against fitted values.It also confirms that the variance in our model is not consistent.
+Finally, on the last plot we used leverages as a diagnostic for our model. It used to examine which cases have the power to be influential. In my model there are a few cases that stick out so I would examine it more closely.
+
+Question 4
+
+When 70% of males involved in agriculture as an occupation, according our formula:
+Fertility measure=Beta_0+Beta_1*Agriculture
+```{r}
+60.30+0.1942*70
+```
+Therefore I expect fertility measure be 73.894 lg. 
+We should use a prediction interval because we have one new observation: 70% of males involved in agriculture as an occupation.
+
+```{r}
+Fertility.lm=lm(Fertility~Agriculture,data=swiss)
+newdata=data.frame(Agriculture=70)
+predict(Fertility.lm,newdata,interval="predict",level=0.89)
+```
+
+Analyses of my choice
+
+Firstly, I decided to analyze Examination against Education, because these two variables are correlated to each other.
+```{r}
+nix<-c(3,4)
+cor(swiss[,nix])
+```
+From this table we can see that correlation between Education and Examination is quite high, 0.698. In the previous model correlation between two variables was only 0.353, thus I think it will be interesting to conduct an analysis on it. 
+```{r}
+plot(Examination~Education,swiss,cex=1)
+```
+This plot confirming relationship and also we can see that as lower percent of education beyond primary school for draftees as quite low percent draftees receiving highest mark on army examination.
+Now I will estimate the regression coefficients:
+```{r}
+mymod<-lm(Examination~Education,swiss)
+coef(mymod)
+```
+Now I will compute the residual sum of squares (RSS) to see how well the model fits the data:
+```{r}
+deviance(mymod)
+mymodsum<-summary(mymod)
+mymodsum$sigma
+mymodsum$r.squared
+summary(mymod)
+```
+
+From the summary we see that R-squared is 48.78% which indicates that this particular model does fit well.
+
+The other model:
+
+```{r}
+mymod2<-lm(Examination~Agriculture,swiss)
+summary(mymod2)
+```
+This model also fits well as R-squared is 47.13%
